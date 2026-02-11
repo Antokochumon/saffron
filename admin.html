@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>Saffron & Spice — Admin Command Centre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for modern statistics graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
+        .order-card:hover .action-buttons { opacity: 1; }
+        
+        /* Status badges */
+        .status-pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .status-preparing { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .status-ready { background: linear-gradient(135deg, #10b981, #059669); }
+        .status-dispatched { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .status-delivered { background: linear-gradient(135deg, #6b7280, #4b5563); }
+        .status-cancelled { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        .payment-paid { background: linear-gradient(135deg, #10b981, #059669); }
+        .payment-pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px; height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #f59e0b, #dc2626);
+            border-radius: 10px;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: scale(1.02);
+            border-color: #f59e0b;
+        }
+        canvas { max-height: 280px; width: 100% !important; }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 0.5rem;
+                z-index: 50;
+            }
+            .main-content-mobile {
+                margin-left: 0;
+                margin-bottom: 80px;
+            }
+            .mobile-nav {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+            }
+        }
+        
+        /* Animated gradient */
+        .gradient-border {
+            position: relative;
+            border: double 1px transparent;
+            border-radius: 1rem;
+            background-image: linear-gradient(#0f172a, #1e293b), 
+                            linear-gradient(to right, #f59e0b, #dc2626);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-slate-100 min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-[#0f172a] to-[#1e293b] z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-3xl p-10 max-w-md w-full shadow-2xl backdrop-blur-lg">
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 mx-auto mb-6 relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl blur-xl opacity-50"></div>
+                    <div class="relative w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl flex items-center justify-center border border-orange-500/30">
+                        <i class="fas fa-utensils text-orange-500 text-4xl"></i>
+                        <span class="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full animate-pulse"></span>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-black text-white mb-2 tracking-tight">Saffron<span class="text-orange-500">&</span>Spice</h1>
+                <p class="text-slate-400">Executive Command Centre</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Username</label>
+                    <input type="text" id="username" value="Anto" required class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3.5 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all" placeholder="Anto">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                    <input type="password" id="password" value="Anto@123" required class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3.5 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all" placeholder="••••••••">
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] transition-all">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Sign In to Dashboard
+                </button>
+            </form>
+            <div class="mt-8 pt-6 border-t border-slate-700/50 text-center">
+                <p class="text-slate-500 text-sm"><i class="fas fa-shield-alt mr-2"></i>Secure Admin Panel | GBP</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard" class="hidden min-h-screen">
+        <!-- SIDEBAR - Responsive -->
+        <aside id="sidebar" class="w-72 border-r border-slate-800 flex flex-col p-6 space-y-8 fixed left-0 top-0 bottom-0 bg-gradient-to-b from-[#0f172a] to-[#1e293b] z-40 sidebar-mobile">
+            <div class="flex items-center space-x-3 px-2">
+                <div class="relative">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                        <i class="fas fa-utensils text-white text-xl"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-white">Saffron<span class="text-orange-500">&</span>Spice</h1>
+                    <p class="text-xs text-slate-400">v4.0 • Enterprise</p>
+                </div>
+            </div>
+
+            <div class="flex-1 space-y-1 mobile-nav">
+                <button id="nav-orders" onclick="showPage('orders')" class="w-full flex items-center space-x-3 p-4 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-600/10 text-orange-500 font-bold transition-all hover:from-orange-500/20 hover:to-red-600/20">
+                    <i class="fas fa-clipboard-list w-5"></i> 
+                    <span>Live Orders</span>
+                    <span id="order-count-badge" class="ml-auto bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full text-xs hidden">0</span>
+                </button>
+                <button id="nav-products" onclick="showPage('products')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+                    <i class="fas fa-utensils w-5"></i> 
+                    <span>Menu Management</span>
+                </button>
+                <button id="nav-add" onclick="showPage('add')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+                    <i class="fas fa-plus-circle w-5"></i> 
+                    <span>Add New Dish</span>
+                </button>
+                <button id="nav-statistics" onclick="showPage('statistics')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+                    <i class="fas fa-chart-pie w-5"></i> 
+                    <span>Analytics</span>
+                </button>
+            </div>
+
+            <div class="pt-6 border-t border-slate-800 space-y-2">
+                <div class="flex items-center space-x-3 p-3 rounded-xl bg-slate-800/50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-white">Anto</p>
+                        <p class="text-xs text-slate-400">Master Administrator</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center space-x-3 p-4 rounded-xl text-slate-500 hover:text-red-400 transition-all hover:bg-slate-800/50">
+                    <i class="fas fa-power-off w-5"></i> 
+                    <span>Secure Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="ml-72 flex flex-col min-h-screen main-content-mobile">
+            <!-- HEADER -->
+            <header class="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-gradient-to-r from-[#0f172a]/90 to-[#1e293b]/90 backdrop-blur-md z-10 sticky top-0">
+                <div class="flex items-center space-x-4">
+                    <h2 id="page-title" class="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Live Orders</h2>
+                    <div class="hidden md:flex items-center space-x-2 text-xs bg-slate-800/50 px-3 py-1.5 rounded-full">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span class="text-slate-300">System Online</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm font-bold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-orange-400 px-4 py-2 rounded-full border border-orange-500/20">
+                        <i class="fas fa-pound-sign mr-1"></i> GBP
+                    </div>
+                    <div id="sync-status" class="hidden md:flex items-center space-x-2 text-xs text-slate-500">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span>Real-time Sync</span>
+                    </div>
+                    <button onclick="fetchOrders()" class="bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-orange-500/20">
+                        <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT VIEWS -->
+            <div class="flex-1 p-4 md:p-8 bg-[#0b1120]">
+                <!-- ----- ORDERS VIEW ----- -->
+                <div id="page-orders" class="space-y-6">
+                    <div class="grid grid-cols-1 gap-4" id="order-rows">
+                        <div class="flex flex-col items-center justify-center py-20 text-slate-500">
+                            <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-orange-500"></i>
+                            <p class="animate-pulse">Fetching live orders...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ----- PRODUCTS VIEW (FIXED) ----- -->
+                <div id="page-products" class="hidden">
+                    <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-2 flex items-center">
+                                <i class="fas fa-utensils text-orange-500 mr-3"></i>
+                                Menu Management
+                            </h3>
+                            <p class="text-slate-400">Edit, update or remove dishes from your menu</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <span class="bg-slate-800/60 text-slate-300 px-4 py-2 rounded-xl text-sm">
+                                <i class="fas fa-database mr-2"></i>
+                                <span id="product-count">0</span> active items
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="products-grid">
+                        <!-- Products will be injected here -->
+                    </div>
+                </div>
+
+                <!-- ----- ADD NEW DISH VIEW ----- -->
+                <div id="page-add" class="hidden max-w-2xl mx-auto">
+                    <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-6 md:p-8 rounded-3xl border border-slate-700/50 space-y-8">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-orange-500/20 to-red-600/20 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-plus-circle text-orange-500 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Create New Dish</h3>
+                                <p class="text-slate-400 text-sm">Add a new item to your restaurant menu</p>
+                            </div>
+                        </div>
+                        <form onsubmit="handleAddProduct(event)" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">
+                                        <i class="fas fa-tag mr-2"></i>Dish Name
+                                    </label>
+                                    <input type="text" name="name" required placeholder="e.g. Paneer Tikka Masala" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">
+                                        <i class="fas fa-pound-sign mr-2"></i>Price
+                                    </label>
+                                    <input type="number" step="0.01" name="price" required placeholder="0.00" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">
+                                        <i class="fas fa-list mr-2"></i>Category
+                                    </label>
+                                    <select name="category" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all">
+                                        <option>Starter</option>
+                                        <option>Curry</option>
+                                        <option>Rice/Bread</option>
+                                        <option>Dessert</option>
+                                        <option>Beverage</option>
+                                        <option>Special</option>
+                                        <option>Vegetarian</option>
+                                        <option>Seafood</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">
+                                    <i class="fas fa-image mr-2"></i>Image URL
+                                </label>
+                                <div class="mb-2 text-xs text-slate-500 flex items-center space-x-2 bg-slate-800/50 p-3 rounded-xl">
+                                    <i class="fas fa-info-circle text-orange-500"></i>
+                                    <span>Supports imgbb.com, ibb.co links • Auto-converts to direct URL</span>
+                                </div>
+                                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-2">
+                                    <input type="url" id="image-url" name="image" required placeholder="https://ibb.co/..." class="flex-1 bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all">
+                                    <button type="button" onclick="convertImgBBLink()" class="bg-slate-800 hover:bg-slate-700 px-6 rounded-xl font-medium transition-all">
+                                        <i class="fas fa-link mr-2"></i>Convert
+                                    </button>
+                                </div>
+                                <div id="image-preview" class="hidden mt-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700">
+                                    <p class="text-xs text-slate-400 mb-2 flex items-center">
+                                        <i class="fas fa-eye mr-2"></i>Preview:
+                                    </p>
+                                    <div class="h-40 bg-slate-900 rounded-xl border border-slate-700 bg-cover bg-center" id="preview-image"></div>
+                                    <p class="text-xs text-slate-500 mt-2 break-all" id="converted-url"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">
+                                    <i class="fas fa-align-left mr-2"></i>Description
+                                </label>
+                                <textarea name="description" required placeholder="Describe the dish, ingredients, taste profile..." class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all" rows="4"></textarea>
+                            </div>
+                            <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 hover:scale-[1.02] transition-all flex items-center justify-center space-x-2">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Publish to Menu</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ----- EDIT DISH MODAL (embedded, hidden by default) ----- -->
+                <div id="edit-product-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 max-w-lg w-full rounded-3xl p-8 shadow-2xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white flex items-center">
+                                <i class="fas fa-edit text-orange-500 mr-2"></i> Edit Dish
+                            </h3>
+                            <button onclick="closeEditModal()" class="text-slate-400 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <form onsubmit="saveEditedProduct(event)" class="space-y-5">
+                            <input type="hidden" id="edit-index" value="">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Dish Name</label>
+                                <input type="text" id="edit-name" required class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Price (£)</label>
+                                    <input type="number" step="0.01" id="edit-price" required class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Category</label>
+                                    <select id="edit-category" class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl">
+                                        <option>Starter</option>
+                                        <option>Curry</option>
+                                        <option>Rice/Bread</option>
+                                        <option>Dessert</option>
+                                        <option>Beverage</option>
+                                        <option>Special</option>
+                                        <option>Vegetarian</option>
+                                        <option>Seafood</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Image URL</label>
+                                <input type="url" id="edit-image" required class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Description</label>
+                                <textarea id="edit-description" required rows="3" class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl"></textarea>
+                            </div>
+                            <div class="flex space-x-3 pt-4">
+                                <button type="button" onclick="closeEditModal()" class="flex-1 p-3 rounded-xl bg-slate-700 font-bold hover:bg-slate-600">Cancel</button>
+                                <button type="submit" class="flex-1 p-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold hover:scale-[1.02]">Update Dish</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ----- STATISTICS PAGE - ENHANCED WITH FILTERS & METRICS ----- -->
+                <div id="page-statistics" class="hidden space-y-8">
+                    <!-- Header with filters -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-1 flex items-center">
+                                <i class="fas fa-chart-line text-orange-500 mr-3"></i>
+                                Analytics Dashboard
+                            </h3>
+                            <p class="text-slate-400 text-sm">Comprehensive order intelligence & performance metrics</p>
+                        </div>
+                        <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
+                            <select id="year-filter" onchange="renderStatistics()" class="bg-slate-800/80 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/50">
+                                <option value="all">All Years</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                            </select>
+                            <select id="month-filter" onchange="renderStatistics()" class="bg-slate-800/80 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/50">
+                                <option value="all">All Months</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI CARDS - Revenue & Orders -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div class="stat-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Total Revenue</p>
+                                    <p class="text-3xl font-black text-white mt-1" id="stat-total-revenue">£0.00</p>
+                                    <p class="text-xs text-slate-500 mt-1">All time</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-pound-sign text-green-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Total Orders</p>
+                                    <p class="text-3xl font-black text-white mt-1" id="stat-total-all">0</p>
+                                    <p class="text-xs text-slate-500 mt-1">Completed + Pending</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500/20 to-red-600/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-shopping-bag text-orange-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Avg. Order Value</p>
+                                    <p class="text-3xl font-black text-white mt-1" id="stat-avg-order">£0.00</p>
+                                    <p class="text-xs text-slate-500 mt-1">Per transaction</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-blue-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Active Orders</p>
+                                    <p class="text-3xl font-black text-white mt-1" id="stat-active-orders">0</p>
+                                    <p class="text-xs text-slate-500 mt-1">In progress</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-violet-600/20 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-clock text-purple-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary KPI Row - Order Type Breakdown -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div class="bg-gradient-to-br from-amber-500/5 to-orange-600/5 border border-amber-500/20 p-5 rounded-xl">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-motorcycle text-amber-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs">Delivery Orders</p>
+                                    <p class="text-2xl font-bold text-white" id="delivery-count">0</p>
+                                    <p class="text-xs text-amber-500" id="delivery-percent">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-500/5 to-indigo-600/5 border border-blue-500/20 p-5 rounded-xl">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-store text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs">Takeaway Orders</p>
+                                    <p class="text-2xl font-bold text-white" id="takeaway-count">0</p>
+                                    <p class="text-xs text-blue-500" id="takeaway-percent">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-500/5 to-emerald-600/5 border border-green-500/20 p-5 rounded-xl">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-users text-green-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs">Dine-in Orders</p>
+                                    <p class="text-2xl font-bold text-white" id="dinein-count">0</p>
+                                    <p class="text-xs text-green-500" id="dinein-percent">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Weekly/Monthly Orders Chart -->
+                        <div class="bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-white flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-orange-500"></i> 
+                                    <span id="chart-title">Daily Order Volume</span>
+                                </h4>
+                                <div class="flex space-x-2">
+                                    <button onclick="setChartPeriod('daily')" id="daily-btn" class="text-xs px-3 py-1.5 rounded-lg bg-orange-500/20 text-orange-400">Daily</button>
+                                    <button onclick="setChartPeriod('monthly')" id="monthly-btn" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300">Monthly</button>
+                                </div>
+                            </div>
+                            <div class="h-52 relative">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Type Distribution Pie Chart -->
+                        <div class="bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-white flex items-center">
+                                    <i class="fas fa-chart-pie mr-2 text-green-400"></i> 
+                                    Order Type Distribution
+                                </h4>
+                                <span class="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">
+                                    <span id="pie-total-orders">0</span> total
+                                </span>
+                            </div>
+                            <div class="flex flex-col md:flex-row items-center">
+                                <div class="w-full md:w-1/2 h-48 relative flex justify-center">
+                                    <canvas id="orderTypeChart"></canvas>
+                                </div>
+                                <div class="w-full md:w-1/2 pl-0 md:pl-4 space-y-3 mt-4 md:mt-0">
+                                    <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-300"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2"></span> Delivery</span>
+                                        <span class="font-bold text-white" id="pie-delivery">0</span>
+                                    </div>
+                                    <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-300"><span class="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span> Takeaway</span>
+                                        <span class="font-bold text-white" id="pie-takeaway">0</span>
+                                    </div>
+                                    <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-300"><span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Dine-in</span>
+                                        <span class="font-bold text-white" id="pie-dinein">0</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-2">
+                                        <span class="text-slate-400 text-sm">Total</span>
+                                        <span class="font-bold text-orange-400" id="pie-total">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Revenue Trend & Top Stats -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Revenue Trend (Small Bar) -->
+                        <div class="lg:col-span-2 bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-white flex items-center">
+                                    <i class="fas fa-pound-sign mr-2 text-yellow-500"></i>
+                                    Revenue Trend
+                                </h4>
+                                <span class="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">Last 6 months</span>
+                            </div>
+                            <div class="h-40 relative">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Peak Hours / Quick Stats -->
+                        <div class="bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-5 rounded-2xl">
+                            <h4 class="font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+                                Key Metrics
+                            </h4>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Peak Order Day</span>
+                                    <span class="font-bold text-white" id="peak-day">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Busiest Hour</span>
+                                    <span class="font-bold text-white" id="peak-hour">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Avg Daily Orders</span>
+                                    <span class="font-bold text-white" id="avg-daily">0</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Card vs Cash</span>
+                                    <span class="font-bold text-white" id="card-cash-ratio">-</span>
+                                </div>
+                                <div class="pt-2 mt-2 border-t border-slate-700">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400 text-sm">This Month Revenue</span>
+                                        <span class="font-bold text-green-400" id="month-revenue">£0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- STATUS MODAL -->
+    <div id="status-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 max-w-md w-full rounded-3xl p-8 shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-500/10 to-red-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-clipboard-check text-orange-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2">Update Order Status</h3>
+            <p class="text-slate-400 text-center text-sm mb-6" id="order-info"></p>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="selectStatus('pending')" class="status-option p-4 rounded-xl bg-yellow-500/10 text-yellow-400 font-bold hover:bg-yellow-500/20 border border-yellow-500/20">Pending</button>
+                <button onclick="selectStatus('preparing')" class="status-option p-4 rounded-xl bg-blue-500/10 text-blue-400 font-bold hover:bg-blue-500/20 border border-blue-500/20">Preparing</button>
+                <button onclick="selectStatus('ready')" class="status-option p-4 rounded-xl bg-green-500/10 text-green-400 font-bold hover:bg-green-500/20 border border-green-500/20">Ready</button>
+                <button onclick="selectStatus('dispatched')" class="status-option p-4 rounded-xl bg-purple-500/10 text-purple-400 font-bold hover:bg-purple-500/20 border border-purple-500/20">Dispatched</button>
+                <button onclick="selectStatus('delivered')" class="status-option p-4 rounded-xl bg-gray-500/10 text-gray-400 font-bold hover:bg-gray-500/20 border border-gray-500/20">Delivered</button>
+                <button onclick="selectStatus('cancelled')" class="status-option p-4 rounded-xl bg-red-500/10 text-red-400 font-bold hover:bg-red-500/20 border border-red-500/20">Cancelled</button>
+            </div>
+            <div id="table-input-container" class="mb-6 hidden">
+                <label class="block text-sm text-slate-300 mb-2">Table Number</label>
+                <input type="text" id="table-number" placeholder="e.g., T-12" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl">
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closeStatusModal()" class="flex-1 p-4 rounded-xl bg-slate-700 font-bold hover:bg-slate-600 transition-all">Close</button>
+                <button onclick="saveStatus()" class="flex-1 p-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold hover:scale-[1.02] transition-all">Save Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT MODAL -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 max-w-md w-full rounded-3xl p-8 shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-500/10 to-emerald-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-credit-card text-green-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2">Update Payment Status</h3>
+            <p class="text-slate-400 text-center text-sm mb-6" id="payment-info"></p>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="selectPayment('paid')" class="payment-option p-4 rounded-xl bg-green-500/10 text-green-400 font-bold border border-green-500/20">Paid</button>
+                <button onclick="selectPayment('pending')" class="payment-option p-4 rounded-xl bg-yellow-500/10 text-yellow-400 font-bold border border-yellow-500/20">Pending</button>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closePaymentModal()" class="flex-1 p-4 rounded-xl bg-slate-700 font-bold hover:bg-slate-600 transition-all">Close</button>
+                <button onclick="savePaymentStatus()" class="flex-1 p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold hover:scale-[1.02] transition-all">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE PRODUCT MODAL -->
+    <div id="delete-product-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 max-w-sm w-full rounded-3xl p-8 shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-br from-red-500/10 to-rose-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-trash-alt text-red-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2">Delete Product?</h3>
+            <p class="text-slate-400 text-center text-sm mb-4" id="product-delete-info"></p>
+            <div class="flex space-x-3">
+                <button onclick="closeDeleteProductModal()" class="flex-1 p-4 rounded-xl bg-slate-700 font-bold hover:bg-slate-600 transition-all">Cancel</button>
+                <button onclick="deleteProduct()" class="flex-1 p-4 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold hover:scale-[1.02] transition-all">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-8 right-8 translate-y-24 opacity-0 transition-all duration-300 z-50">
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 font-bold border border-orange-500/30">
+            <i id="toast-icon" class="fas fa-check-circle text-green-500"></i>
+            <span id="toast-msg">Success</span>
+        </div>
+    </div>
+
+    <script>
+        // ----- CONFIGURATION -----
+        const API_URL = "https://script.google.com/macros/s/AKfycbzCO8-yMvRXq3JvGlYKKan3fAWjm2zkG4q7pVuW45NuHifQkMvdfUnl06TKBWXj_M_N/exec";
+        let authToken = localStorage.getItem('adminToken');
+        let currentOrderId = null;
+        let selectedStatus = null;
+        let selectedPaymentStatus = null;
+        let currentOrderType = null;
+        let currentProductId = null;      // index in allProducts array
+        let currentProductRowId = null;   // Google Sheets row identifier (id)
+        let allProducts = [];
+        let allOrdersForStats = [];
+        let chartPeriod = 'daily';
+        let weeklyChart, orderTypeChart, revenueChart;
+
+        // ----- INITIALIZATION -----
+        window.onload = function() {
+            if (authToken) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').classList.remove('hidden');
+                fetchOrders();
+                showPage('orders');
+            }
+            
+            document.getElementById('image-url')?.addEventListener('input', function(e) {
+                updateImagePreview(e.target.value);
+            });
+            
+            // Check for mobile viewport
+            checkMobileViewport();
+            window.addEventListener('resize', checkMobileViewport);
+        };
+
+        // ----- MOBILE RESPONSIVENESS -----
+        function checkMobileViewport() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('sidebar-mobile');
+                mainContent.classList.add('main-content-mobile');
+            } else {
+                sidebar.classList.remove('sidebar-mobile');
+                mainContent.classList.remove('main-content-mobile');
+            }
+        }
+
+        // ----- LOGIN -----
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Authenticating...';
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                if (username === "Anto" && password === "Anto@123") {
+                    authToken = "auth_" + Date.now();
+                    localStorage.setItem('adminToken', authToken);
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    showToast("Welcome back, Anto!", "fa-check-circle", "text-green-500");
+                    fetchOrders();
+                    showPage('orders');
+                } else {
+                    showToast("Invalid credentials", "fa-times-circle", "text-red-500");
+                }
+            } catch (error) {
+                showToast("Connection error", "fa-times-circle", "text-red-500");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Sign In to Dashboard';
+            }
+        }
+
+        // ----- LOGOUT -----
+        function logout() {
+            localStorage.removeItem('adminToken');
+            authToken = null;
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard').classList.add('hidden');
+            showToast("Logged out successfully", "fa-check-circle", "text-green-500");
+        }
+
+        // ----- PAGE NAVIGATION -----
+        function showPage(page) {
+            // Hide all pages
+            document.getElementById('page-orders').classList.add('hidden');
+            document.getElementById('page-products').classList.add('hidden');
+            document.getElementById('page-add').classList.add('hidden');
+            document.getElementById('page-statistics').classList.add('hidden');
+            
+            // Show selected page
+            document.getElementById(`page-${page}`).classList.remove('hidden');
+            
+            // Update page title
+            const titles = {
+                'orders': 'Live Orders',
+                'products': 'Menu Management',
+                'add': 'Add New Dish',
+                'statistics': 'Analytics Dashboard'
+            };
+            document.getElementById('page-title').innerText = titles[page];
+            
+            // Update navigation highlighting
+            ['nav-orders', 'nav-products', 'nav-add', 'nav-statistics'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('bg-gradient-to-r', 'from-orange-500/10', 'to-red-600/10', 'text-orange-500');
+                el.classList.add('text-slate-400');
+            });
+            
+            const activeNav = document.getElementById(`nav-${page}`);
+            activeNav.classList.add('bg-gradient-to-r', 'from-orange-500/10', 'to-red-600/10', 'text-orange-500');
+            activeNav.classList.remove('text-slate-400');
+            
+            // Fetch data based on page
+            if (page === 'orders') {
+                fetchOrders();
+            } else if (page === 'products') {
+                fetchProducts();
+            } else if (page === 'statistics') {
+                if (allOrdersForStats.length > 0) {
+                    renderStatistics();
+                } else {
+                    fetchOrders(true);
+                }
+            }
+        }
+
+        // ----- FETCH ORDERS (FIXED) -----
+        async function fetchOrders(triggerStats = false) {
+            const container = document.getElementById('order-rows');
+            const icon = document.getElementById('refresh-icon');
+            if (icon) icon.classList.add('fa-spin');
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getOrders`);
+                const orders = await response.json();
+                allOrdersForStats = orders || [];
+                
+                // Update order count badge
+                const activeOrders = orders.filter(o => !['delivered', 'cancelled'].includes(o.status?.toLowerCase())).length;
+                const badge = document.getElementById('order-count-badge');
+                if (activeOrders > 0) {
+                    badge.innerText = activeOrders;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+                
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-20 text-slate-500">
+                            <i class="fas fa-box-open text-6xl mb-4 opacity-20"></i>
+                            <p class="text-xl font-medium mb-2">No orders found</p>
+                            <p class="text-sm">Your restaurant is currently quiet</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = orders.map(order => renderOrderCard(order)).join('');
+                }
+                
+                if (triggerStats || !document.getElementById('page-statistics').classList.contains('hidden')) {
+                    renderStatistics();
+                }
+            } catch (error) {
+                console.error('Fetch orders error:', error);
+                container.innerHTML = `
+                    <div class="bg-gradient-to-r from-red-500/10 to-rose-600/10 border border-red-500/20 p-8 rounded-2xl text-center">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-4"></i>
+                        <p class="text-red-400 font-bold">Failed to load orders</p>
+                        <p class="text-sm text-slate-500 mt-2">Please check your connection</p>
+                    </div>
+                `;
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        // ----- RENDER ORDER CARD (FIXED NaN ISSUE) -----
+        function renderOrderCard(order) {
+            const statusClass = getStatusClass(order.status);
+            const paymentClass = getPaymentClass(order.payment);
+            const orderType = order.type || 'takeaway';
+            const orderTypeLower = orderType.toLowerCase();
+            
+            let typeIcon = 'fa-shopping-bag';
+            if (orderTypeLower.includes('delivery')) typeIcon = 'fa-truck';
+            if (orderTypeLower.includes('dine')) typeIcon = 'fa-chair';
+            
+            // Read amount from common API/sheet field names and parse currency-safe.
+            const totalAmount = getOrderAmount(order);
+            
+            return `
+                <div class="order-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 p-6 rounded-2xl hover:border-orange-500/30 transition-all animate-slide-in">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <div class="flex items-center space-x-3 mb-2 flex-wrap">
+                                        <span class="text-lg font-bold text-white">${order.name || 'Guest'}</span>
+                                        <span class="text-xs px-2 py-1 rounded-full ${statusClass} text-white font-bold uppercase">${order.status || 'pending'}</span>
+                                        <span class="text-xs px-2 py-1 rounded-full ${paymentClass} text-white font-bold uppercase">${order.payment || 'pending'}</span>
+                                        ${order.collectiontime ? `
+                                            <span class="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-600/20 text-blue-400">
+                                                <i class="far fa-clock mr-1"></i>${formatCollectionTime(order.collectiontime)}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <div class="flex flex-wrap items-center text-sm text-slate-400 gap-3">
+                                        <span><i class="fas fa-phone-alt mr-1.5 text-xs"></i>${order.phone || ''}</span>
+                                        <span><i class="far fa-clock mr-1.5 text-xs"></i>${formatTime(order.date)}</span>
+                                        <span class="px-2 py-0.5 bg-slate-700/50 rounded text-xs flex items-center">
+                                            <i class="fas ${typeIcon} mr-1.5"></i>${order.type}
+                                        </span>
+                                        ${order.table ? `
+                                            <span class="px-2 py-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 text-blue-400 rounded text-xs">
+                                                <i class="fas fa-chair"></i> Table ${order.table}
+                                            </span>
+                                        ` : ''}
+                                        ${order.area ? `
+                                            <span class="px-2 py-0.5 bg-gradient-to-r from-green-500/20 to-emerald-600/20 text-green-400 rounded text-xs">
+                                                <i class="fas fa-map-marker-alt"></i> ${order.area}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <span class="text-xs text-slate-500 font-mono bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+                                    ${order.id}
+                                </span>
+                            </div>
+                            
+                            <p class="text-sm text-slate-300 mb-2">
+                                <i class="fas fa-utensils mr-2 text-slate-500"></i>
+                                ${order.items || 'No items'}
+                            </p>
+                            
+                            ${order.address ? `
+                                <p class="text-sm text-slate-400 mb-2">
+                                    <i class="fas fa-home mr-2"></i>${order.address}
+                                </p>
+                            ` : ''}
+                            
+                            <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-700/50">
+                                <div class="text-2xl font-black bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                                    £${totalAmount.toFixed(2)}
+                                </div>
+                                <div class="action-buttons opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+                                    <button onclick="openStatusModal('${order.id}', '${order.type}', '${(order.name || '').replace(/'/g, "\\'")}', '${order.phone || ''}')" 
+                                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-all">
+                                        <i class="fas fa-edit mr-1"></i> Status
+                                    </button>
+                                    <button onclick="openPaymentModal('${order.id}', '${(order.name || '').replace(/'/g, "\\'")}', '${order.payment || 'pending'}')" 
+                                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-600/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all">
+                                        <i class="fas fa-credit-card mr-1"></i> Payment
+                                    </button>
+                                    <button onclick="openDeleteModal('${order.id}')" 
+                                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500/10 to-rose-600/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all">
+                                        <i class="fas fa-trash-alt mr-1"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function parseCurrencyAmount(value) {
+            if (value === undefined || value === null) return NaN;
+            const cleaned = String(value).replace(/,/g, '').replace(/[^\d.-]/g, '');
+            if (!cleaned || cleaned === '-' || cleaned === '.' || cleaned === '-.') return NaN;
+            const parsed = Number(cleaned);
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+
+        function getOrderAmount(order) {
+            const amountFields = [order?.total, order?.totalAmount, order?.amount, order?.price];
+            for (const field of amountFields) {
+                const parsed = parseCurrencyAmount(field);
+                if (Number.isFinite(parsed)) return parsed;
+            }
+            return 0;
+        }
+
+        // ----- FETCH PRODUCTS (NO DUMMY DATA, PURE BACKEND) -----
+        async function fetchProducts() {
+            const container = document.getElementById('products-grid');
+            container.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-20">
+                    <i class="fas fa-circle-notch fa-spin text-orange-500 text-3xl mb-4"></i>
+                    <p class="text-slate-400">Loading menu items...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getProducts`);
+                const products = await response.json();
+                allProducts = products || [];
+                
+                // Update product count
+                document.getElementById('product-count').innerText = allProducts.length;
+                
+                if (!products || products.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-500">
+                            <i class="fas fa-utensils text-6xl mb-4 opacity-20"></i>
+                            <p class="text-xl font-medium mb-2">No products found</p>
+                            <p class="text-sm mb-4">Start by adding your first dish</p>
+                            <button onclick="showPage('add')" class="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-bold">
+                                <i class="fas fa-plus-circle mr-2"></i>Add New Dish
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Store product row IDs for delete/edit operations (assuming product object has .id or .row)
+                    container.innerHTML = products.map((product, index) => {
+                        // FIX: ensure price is valid number
+                        let priceVal = 0;
+                        if (product.price !== undefined && product.price !== null) {
+                            priceVal = parseFloat(product.price);
+                            if (isNaN(priceVal)) priceVal = 0;
+                        }
+                        return `
+                        <div class="product-card bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-orange-500/40 transition-all">
+                            <div class="h-48 bg-cover bg-center relative" style="background-image: url('${product.image || 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400'}')">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                                <div class="absolute top-4 right-4 px-3 py-1.5 bg-slate-900/90 backdrop-blur-sm rounded-full text-xs font-bold text-orange-400 border border-orange-500/30">
+                                    ${product.category || 'Uncategorized'}
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="text-lg font-bold text-white">${product.name}</h4>
+                                    <span class="text-xl font-black text-orange-500">£${priceVal.toFixed(2)}</span>
+                                </div>
+                                <p class="text-sm text-slate-400 mb-4 line-clamp-2">${product.description || 'Delicious dish from our kitchen'}</p>
+                                <div class="flex space-x-2">
+                                    <button onclick="editProduct(${index})" 
+                                        class="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all font-medium text-sm">
+                                        <i class="fas fa-edit mr-1.5"></i>Edit
+                                    </button>
+                                    <button onclick="openDeleteProductModal(${index})" 
+                                        class="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500/10 to-rose-600/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all font-medium text-sm">
+                                        <i class="fas fa-trash-alt mr-1.5"></i>Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+                }
+            } catch (error) {
+                console.error('Fetch products error:', error);
+                container.innerHTML = `
+                    <div class="col-span-full bg-gradient-to-r from-red-500/10 to-rose-600/10 border border-red-500/20 p-8 rounded-2xl text-center">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-4"></i>
+                        <p class="text-red-400 font-bold">Failed to load products</p>
+                        <p class="text-sm text-slate-500 mt-2">Please refresh the page</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ----- EDIT PRODUCT (FULL IMPLEMENTATION) -----
+        function editProduct(index) {
+            const product = allProducts[index];
+            if (!product) return;
+            
+            // Populate modal fields
+            document.getElementById('edit-index').value = index;
+            document.getElementById('edit-name').value = product.name || '';
+            let priceVal = parseFloat(product.price) || 0;
+            document.getElementById('edit-price').value = priceVal.toFixed(2);
+            document.getElementById('edit-category').value = product.category || 'Curry';
+            document.getElementById('edit-image').value = product.image || '';
+            document.getElementById('edit-description').value = product.description || '';
+            
+            // Show modal
+            document.getElementById('edit-product-modal').classList.remove('hidden');
+            document.getElementById('edit-product-modal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-product-modal').classList.add('hidden');
+            document.getElementById('edit-product-modal').classList.remove('flex');
+        }
+
+        async function saveEditedProduct(e) {
+            e.preventDefault();
+            const index = document.getElementById('edit-index').value;
+            const product = allProducts[index];
+            if (!product) return;
+            
+            const updatedProduct = {
+                action: "updateProduct",
+                id: product.id,              // Google Sheets row identifier (must exist)
+                name: document.getElementById('edit-name').value,
+                price: parseFloat(document.getElementById('edit-price').value) || 0,
+                category: document.getElementById('edit-category').value,
+                image: document.getElementById('edit-image').value,
+                description: document.getElementById('edit-description').value
+            };
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(updatedProduct)
+                });
+                showToast("✓ Dish updated successfully!", "fa-check-circle", "text-green-500");
+                closeEditModal();
+                fetchProducts(); // refresh list
+            } catch (error) {
+                showToast("Failed to update dish", "fa-times-circle", "text-red-500");
+            }
+        }
+
+        // ----- ADD PRODUCT -----
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding to menu...';
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.action = "addProduct";
+            
+            // Convert image URL if needed
+            if (data.image.includes('ibb.co') || data.image.includes('imgbb.com')) {
+                data.image = convertToDirectUrl(data.image);
+            }
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(data)
+                });
+                
+                showToast("✓ Dish added successfully!", "fa-check-circle", "text-green-500");
+                e.target.reset();
+                document.getElementById('image-preview').classList.add('hidden');
+                fetchProducts();
+                
+                // Switch to products page after short delay
+                setTimeout(() => showPage('products'), 1500);
+            } catch (error) {
+                showToast("Failed to add dish", "fa-times-circle", "text-red-500");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // ----- DELETE PRODUCT (SYNC WITH GOOGLE SHEET) -----
+        function openDeleteProductModal(index) {
+            currentProductId = index;
+            const product = allProducts[index];
+            if (!product) return;
+            currentProductName = product.name;
+            currentProductRowId = product.id;  // crucial: store sheet row ID
+            
+            document.getElementById('product-delete-info').innerHTML = `
+                <span class="block font-bold text-white mb-1">${product.name}</span>
+                <span class="text-sm text-slate-400">£${parseFloat(product.price || 0).toFixed(2)}</span>
+            `;
+            document.getElementById('delete-product-modal').classList.remove('hidden');
+            document.getElementById('delete-product-modal').classList.add('flex');
+        }
+
+        function closeDeleteProductModal() {
+            document.getElementById('delete-product-modal').classList.add('hidden');
+            document.getElementById('delete-product-modal').classList.remove('flex');
+            currentProductId = null;
+            currentProductName = null;
+            currentProductRowId = null;
+        }
+
+        async function deleteProduct() {
+            if (currentProductId === null || !allProducts[currentProductId]) {
+                showToast("Product not found", "fa-times-circle", "text-red-500");
+                return;
+            }
+            
+            const product = allProducts[currentProductId];
+            const productRowId = product.id;  // Google Sheets row ID
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: "deleteProduct",
+                        productId: productRowId,      // send row identifier
+                        productName: product.name
+                    })
+                });
+                
+                showToast("✓ Product deleted successfully", "fa-check-circle", "text-green-500");
+                closeDeleteProductModal();
+                fetchProducts();  // refresh list from backend
+            } catch (error) {
+                showToast("Failed to delete product", "fa-times-circle", "text-red-500");
+            }
+        }
+
+        // ----- DELETE ORDER -----
+        function openDeleteModal(orderId) {
+            if (confirm("Are you sure you want to delete this order?")) {
+                currentOrderId = orderId;
+                deleteOrder();
+            }
+        }
+
+        async function deleteOrder() {
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: "deleteOrder",
+                        orderId: currentOrderId
+                    })
+                });
+                
+                showToast("✓ Order deleted successfully", "fa-check-circle", "text-green-500");
+                fetchOrders();
+            } catch (error) {
+                showToast("Failed to delete order", "fa-times-circle", "text-red-500");
+            }
+        }
+
+        // ----- STATUS MODAL -----
+        function openStatusModal(orderId, orderType, customerName, customerPhone) {
+            currentOrderId = orderId;
+            currentOrderType = orderType;
+            document.getElementById('order-info').innerHTML = `
+                <strong class="text-white">${customerName}</strong>
+                <span class="block text-slate-400">${customerPhone}</span>
+                <span class="text-xs text-slate-500 mt-2 block">${orderId}</span>
+            `;
+            document.getElementById('table-input-container').classList.add('hidden');
+            document.getElementById('status-modal').classList.remove('hidden');
+            document.getElementById('status-modal').classList.add('flex');
+            
+            selectedStatus = null;
+            document.querySelectorAll('.status-option').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+            });
+        }
+
+        function closeStatusModal() {
+            document.getElementById('status-modal').classList.add('hidden');
+            document.getElementById('status-modal').classList.remove('flex');
+            currentOrderId = null;
+            selectedStatus = null;
+        }
+
+        function selectStatus(status) {
+            selectedStatus = status;
+            const tableContainer = document.getElementById('table-input-container');
+            if (currentOrderType?.toLowerCase().includes('dine') && status === 'ready') {
+                tableContainer.classList.remove('hidden');
+            } else {
+                tableContainer.classList.add('hidden');
+            }
+            document.querySelectorAll('.status-option').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+            });
+            event.target.classList.add('ring-2', 'ring-white', 'scale-105');
+        }
+
+        async function saveStatus() {
+            if (!selectedStatus) {
+                showToast("Please select a status", "fa-exclamation-circle", "text-yellow-500");
+                return;
+            }
+            const tableNumber = document.getElementById('table-number').value;
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: "updateStatus",
+                        orderId: currentOrderId,
+                        status: selectedStatus,
+                        table: tableNumber
+                    })
+                });
+                showToast(`✓ Status updated to ${selectedStatus}`, "fa-check-circle", "text-green-500");
+                closeStatusModal();
+                fetchOrders();
+            } catch (error) {
+                showToast("Failed to update status", "fa-times-circle", "text-red-500");
+            }
+        }
+
+        // ----- PAYMENT MODAL -----
+        function openPaymentModal(orderId, customerName, currentPayment) {
+            currentOrderId = orderId;
+            selectedPaymentStatus = currentPayment;
+            document.getElementById('payment-info').innerHTML = `
+                <strong class="text-white">${customerName}</strong>
+                <span class="block text-slate-400 mt-1">Current: <span class="${currentPayment === 'paid' ? 'text-green-400' : 'text-yellow-400'} uppercase font-bold">${currentPayment}</span></span>
+                <span class="text-xs text-slate-500 mt-2 block">${orderId}</span>
+            `;
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+            
+            document.querySelectorAll('.payment-option').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+                if (btn.innerText.toLowerCase().includes(currentPayment.toLowerCase())) {
+                    btn.classList.add('ring-2', 'ring-white', 'scale-105');
+                }
+            });
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('payment-modal').classList.remove('flex');
+            currentOrderId = null;
+            selectedPaymentStatus = null;
+        }
+
+        function selectPayment(status) {
+            selectedPaymentStatus = status;
+            document.querySelectorAll('.payment-option').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+            });
+            event.target.classList.add('ring-2', 'ring-white', 'scale-105');
+        }
+
+        async function savePaymentStatus() {
+            if (!selectedPaymentStatus) {
+                showToast("Please select payment status", "fa-exclamation-circle", "text-yellow-500");
+                return;
+            }
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: "updatePayment",
+                        orderId: currentOrderId,
+                        payment: selectedPaymentStatus
+                    })
+                });
+                showToast(`✓ Payment marked as ${selectedPaymentStatus}`, "fa-check-circle", "text-green-500");
+                closePaymentModal();
+                fetchOrders();
+            } catch (error) {
+                showToast("Failed to update payment", "fa-times-circle", "text-red-500");
+            }
+        }
+
+        // ----- ENHANCED STATISTICS RENDERING (Fixed NaN) -----
+        function renderStatistics() {
+            const orders = allOrdersForStats;
+            
+            const yearFilter = document.getElementById('year-filter')?.value || 'all';
+            const monthFilter = document.getElementById('month-filter')?.value || 'all';
+            
+            let filteredOrders = [...orders];
+            if (yearFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(o => {
+                    const date = new Date(o.date);
+                    return date.getFullYear().toString() === yearFilter;
+                });
+            }
+            if (monthFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(o => {
+                    const date = new Date(o.date);
+                    return date.getMonth().toString() === monthFilter;
+                });
+            }
+            
+            const totalOrders = filteredOrders.length;
+            let totalRevenue = 0;
+            filteredOrders.forEach(order => {
+                const amount = getOrderAmount(order);
+                totalRevenue += amount;
+            });
+            
+            const deliveryOrders = filteredOrders.filter(o => o.type?.toLowerCase().includes('delivery')).length;
+            const takeawayOrders = filteredOrders.filter(o => o.type?.toLowerCase().includes('takeaway')).length;
+            const dineinOrders = filteredOrders.filter(o => o.type?.toLowerCase().includes('dine')).length;
+            
+            const activeOrders = filteredOrders.filter(o => 
+                !['delivered', 'cancelled'].includes(o.status?.toLowerCase())
+            ).length;
+            
+            const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+            
+            document.getElementById('stat-total-revenue').innerText = `£${totalRevenue.toFixed(2)}`;
+            document.getElementById('stat-total-all').innerText = totalOrders;
+            document.getElementById('stat-avg-order').innerText = `£${avgOrderValue.toFixed(2)}`;
+            document.getElementById('stat-active-orders').innerText = activeOrders;
+            
+            document.getElementById('delivery-count').innerText = deliveryOrders;
+            document.getElementById('takeaway-count').innerText = takeawayOrders;
+            document.getElementById('dinein-count').innerText = dineinOrders;
+            
+            const totalTypeOrders = deliveryOrders + takeawayOrders + dineinOrders || 1;
+            document.getElementById('delivery-percent').innerText = `${((deliveryOrders / totalTypeOrders)*100).toFixed(1)}%`;
+            document.getElementById('takeaway-percent').innerText = `${((takeawayOrders / totalTypeOrders)*100).toFixed(1)}%`;
+            document.getElementById('dinein-percent').innerText = `${((dineinOrders / totalTypeOrders)*100).toFixed(1)}%`;
+            
+            document.getElementById('pie-delivery').innerText = deliveryOrders;
+            document.getElementById('pie-takeaway').innerText = takeawayOrders;
+            document.getElementById('pie-dinein').innerText = dineinOrders;
+            document.getElementById('pie-total').innerText = totalTypeOrders;
+            document.getElementById('pie-total-orders').innerText = totalTypeOrders;
+            
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const monthRevenue = filteredOrders
+                .filter(o => {
+                    const d = new Date(o.date);
+                    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+            document.getElementById('month-revenue').innerText = `£${monthRevenue.toFixed(2)}`;
+            
+            // Peak day, hour etc.
+            const dayCounts = {};
+            filteredOrders.forEach(o => {
+                const day = new Date(o.date).toDateString();
+                dayCounts[day] = (dayCounts[day] || 0) + 1;
+            });
+            let peakDayStr = 'N/A', peakCount = 0;
+            Object.entries(dayCounts).forEach(([day, count]) => { if (count > peakCount) { peakCount = count; peakDayStr = day; } });
+            if (peakDayStr !== 'N/A') {
+                const peakDate = new Date(peakDayStr);
+                peakDayStr = peakDate.toLocaleDateString('en-gb', { weekday: 'short', day: 'numeric', month: 'short' });
+            }
+            document.getElementById('peak-day').innerText = peakDayStr;
+            
+            const hourCounts = {};
+            filteredOrders.forEach(o => {
+                const hour = new Date(o.date).getHours();
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            });
+            let peakHourStr = 'N/A', peakHourCount = 0;
+            Object.entries(hourCounts).forEach(([hour, count]) => { if (count > peakHourCount) { peakHourCount = count; peakHourStr = `${hour}:00 - ${hour+1}:00`; } });
+            document.getElementById('peak-hour').innerText = peakHourStr;
+            
+            const uniqueDays = Object.keys(dayCounts).length || 1;
+            document.getElementById('avg-daily').innerText = (totalOrders / uniqueDays).toFixed(1);
+            
+            const cardOrders = filteredOrders.filter(o => o.payment?.toLowerCase() === 'paid' || o.paymentmethod?.toLowerCase() === 'card').length;
+            const cashOrders = filteredOrders.filter(o => o.payment?.toLowerCase() === 'pending' || o.paymentmethod?.toLowerCase() === 'cash').length;
+            const totalPayments = cardOrders + cashOrders || 1;
+            document.getElementById('card-cash-ratio').innerText = `${Math.round((cardOrders/totalPayments)*100)}% Card / ${Math.round((cashOrders/totalPayments)*100)}% Cash`;
+            
+            renderOrderCharts(filteredOrders);
+            renderRevenueChart(filteredOrders);
+        }
+
+        // ----- CHART PERIOD TOGGLE -----
+        function setChartPeriod(period) {
+            chartPeriod = period;
+            document.getElementById('daily-btn').classList.toggle('bg-orange-500/20', period === 'daily');
+            document.getElementById('daily-btn').classList.toggle('text-orange-400', period === 'daily');
+            document.getElementById('daily-btn').classList.toggle('bg-slate-700', period !== 'daily');
+            document.getElementById('daily-btn').classList.toggle('text-slate-300', period !== 'daily');
+            document.getElementById('monthly-btn').classList.toggle('bg-orange-500/20', period === 'monthly');
+            document.getElementById('monthly-btn').classList.toggle('text-orange-400', period === 'monthly');
+            document.getElementById('monthly-btn').classList.toggle('bg-slate-700', period !== 'monthly');
+            document.getElementById('monthly-btn').classList.toggle('text-slate-300', period !== 'monthly');
+            document.getElementById('chart-title').innerText = period === 'daily' ? 'Daily Order Volume' : 'Monthly Order Volume';
+            renderStatistics();
+        }
+
+        // ----- RENDER ORDER CHARTS -----
+        function renderOrderCharts(orders) {
+            const ctx = document.getElementById('ordersChart')?.getContext('2d');
+            if (!ctx) return;
+            if (window.weeklyChart) window.weeklyChart.destroy();
+            
+            let labels = [], data = [];
+            if (chartPeriod === 'daily') {
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(); date.setDate(date.getDate() - i);
+                    const dateStr = date.toDateString();
+                    labels.push(date.toLocaleDateString('en-gb', { weekday: 'short', day: 'numeric' }));
+                    data.push(orders.filter(o => new Date(o.date).toDateString() === dateStr).length);
+                }
+            } else {
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date(); date.setMonth(date.getMonth() - i);
+                    labels.push(date.toLocaleDateString('en-gb', { month: 'short', year: '2-digit' }));
+                    data.push(orders.filter(o => {
+                        const od = new Date(o.date);
+                        return od.getMonth() === date.getMonth() && od.getFullYear() === date.getFullYear();
+                    }).length);
+                }
+            }
+            window.weeklyChart = new Chart(ctx, {
+                type: 'bar', data: { labels, datasets: [{ label: 'Orders', data, backgroundColor: 'rgba(245, 158, 11, 0.7)', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } },
+                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+            });
+            
+            const ctx2 = document.getElementById('orderTypeChart')?.getContext('2d');
+            if (ctx2) {
+                if (window.orderTypeChart) window.orderTypeChart.destroy();
+                const d = orders.filter(o => o.type?.toLowerCase().includes('delivery')).length;
+                const t = orders.filter(o => o.type?.toLowerCase().includes('takeaway')).length;
+                const di = orders.filter(o => o.type?.toLowerCase().includes('dine')).length;
+                window.orderTypeChart = new Chart(ctx2, {
+                    type: 'doughnut', data: { labels: ['Delivery','Takeaway','Dine-in'], datasets: [{ data: [d,t,di], backgroundColor: ['#10b981','#f59e0b','#3b82f6'], borderWidth: 0 }] },
+                    options: { cutout: '65%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        function renderRevenueChart(orders) {
+            const ctx = document.getElementById('revenueChart')?.getContext('2d');
+            if (!ctx) return;
+            if (window.revenueChart) window.revenueChart.destroy();
+            const labels = [], revData = [];
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(); date.setMonth(date.getMonth() - i);
+                labels.push(date.toLocaleDateString('en-gb', { month: 'short' }));
+                const monthRev = orders.filter(o => {
+                    const od = new Date(o.date);
+                    return od.getMonth() === date.getMonth() && od.getFullYear() === date.getFullYear();
+                }).reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+                revData.push(monthRev);
+            }
+            window.revenueChart = new Chart(ctx, {
+                type: 'line', data: { labels, datasets: [{ label: 'Revenue (£)', data: revData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', borderWidth: 3, pointBackgroundColor: '#f59e0b', tension: 0.3, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `Revenue: £${ctx.raw.toFixed(2)}` } } },
+                scales: { y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { callback: (val) => '£'+val, color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+            });
+        }
+
+        // ----- UTILITY FUNCTIONS -----
+        function getStatusClass(status) {
+            const classes = { 'pending':'status-pending','preparing':'status-preparing','ready':'status-ready','dispatched':'status-dispatched','delivered':'status-delivered','cancelled':'status-cancelled' };
+            return classes[status?.toLowerCase()] || 'bg-slate-700';
+        }
+        function getPaymentClass(payment) { return payment === 'paid' ? 'payment-paid' : 'payment-pending'; }
+        function formatTime(dateString) { try { return new Date(dateString).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); } catch { return 'N/A'; } }
+        function formatCollectionTime(d) { try { return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',weekday:'short'}); } catch { return 'N/A'; } }
+        function convertToDirectUrl(url) {
+            if (!url) return url;
+            let cleaned = url.replace(/\[url=[^\]]*\]/g,'').replace(/\[\/url\]/g,'').replace(/\[img\]/g,'').replace(/\[\/img\]/g,'').trim();
+            if (cleaned.includes('ibb.co')||cleaned.includes('imgbb.com')) {
+                cleaned = cleaned.replace(/\/view(\?.+)?$/,'').replace(/\/html(\?.+)?$/,'');
+                if (!cleaned.match(/\.(jpg|jpeg|png|gif|webp)$/i)) cleaned += '.jpg';
+            } return cleaned;
+        }
+        function convertImgBBLink() {
+            const input = document.getElementById('image-url');
+            const url = input.value.trim();
+            if (url.includes('ibb.co')||url.includes('imgbb.com')) { input.value = convertToDirectUrl(url); updateImagePreview(input.value); showToast("✓ Converted to direct URL","fa-link","text-green-500"); }
+            else updateImagePreview(url);
+        }
+        function updateImagePreview(url) {
+            const preview = document.getElementById('image-preview');
+            const imgDiv = document.getElementById('preview-image');
+            const converted = document.getElementById('converted-url');
+            if (url && url.startsWith('http')) {
+                imgDiv.style.backgroundImage = `url('${url}')`;
+                converted.innerHTML = `<i class="fas fa-link mr-1"></i> ${url.substring(0,50)}${url.length>50?'...':''}`;
+                preview.classList.remove('hidden');
+            } else preview.classList.add('hidden');
+        }
+        function showToast(message, icon = 'fa-check-circle', color = 'text-green-500') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+            toastMsg.innerText = message;
+            toastIcon.className = `fas ${icon} ${color}`;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); toast.classList.remove('translate-y-0', 'opacity-100'); }, 3000);
+        }
+
+        // Add confirm-product-delete listener
+        document.getElementById('confirm-product-delete-btn')?.addEventListener('click', deleteProduct);
+    </script>
+</body>
+</html>
