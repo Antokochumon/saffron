@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
     <title>Saffron & Spice — Admin Command Centre</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -58,28 +58,320 @@
         }
         canvas { max-height: 280px; width: 100% !important; }
         
-        /* Mobile responsive */
+        /* === ENHANCED MOBILE RESPONSIVE FIXES - COMPLETE === */
         @media (max-width: 768px) {
+            /* Sidebar transforms into bottom navigation */
             .sidebar-mobile {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                top: auto;
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                padding: 0.5rem;
-                z-index: 50;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                width: 100% !important;
+                height: auto !important;
+                flex-direction: row !important;
+                padding: 0.5rem 0.25rem !important;
+                z-index: 1000 !important;
+                background: rgba(15, 23, 42, 0.95) !important;
+                backdrop-filter: blur(12px) !important;
+                border-top: 1px solid rgba(245, 158, 11, 0.3) !important;
+                border-right: none !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.5) !important;
             }
-            .main-content-mobile {
-                margin-left: 0;
-                margin-bottom: 80px;
+            
+            .sidebar-mobile .flex-1 {
+                margin: 0 !important;
+                padding: 0 !important;
             }
+            
             .mobile-nav {
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
+                display: flex !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                width: 100% !important;
+                gap: 0.25rem !important;
+            }
+            
+            .mobile-nav button {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0.5rem 0.25rem !important;
+                font-size: 0.7rem !important;
+                border-radius: 0.75rem !important;
+                flex: 1 !important;
+                margin: 0 !important;
+            }
+            
+            .mobile-nav button i {
+                margin-right: 0 !important;
+                margin-bottom: 0.25rem !important;
+                font-size: 1.1rem !important;
+            }
+            
+            .mobile-nav button span {
+                display: block !important;
+                font-size: 0.65rem !important;
+                white-space: nowrap !important;
+            }
+            
+            #order-count-badge {
+                position: absolute !important;
+                top: 0.25rem !important;
+                right: 0.25rem !important;
+                margin-left: 0 !important;
+            }
+            
+            /* Hide desktop elements on mobile */
+            .sidebar-mobile .px-2:first-child,
+            .sidebar-mobile .pt-6,
+            .sidebar-mobile .border-t {
+                display: none !important;
+            }
+            
+            .main-content-mobile {
+                margin-left: 0 !important;
+                margin-bottom: 85px !important;
+                padding-bottom: 10px !important;
+                width: 100% !important;
+            }
+            
+            /* Make header compact on mobile */
+            header {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                height: auto !important;
+                min-height: 4rem !important;
+                flex-wrap: wrap !important;
+                gap: 0.5rem !important;
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+            
+            #page-title {
+                font-size: 1.1rem !important;
+            }
+            
+            /* Order cards - full width and stacked properly */
+            .order-card .flex-col.md\:flex-row {
+                flex-direction: column !important;
+            }
+            
+            .order-card .flex.items-start.justify-between {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.75rem !important;
+            }
+            
+            .order-card .text-2xl {
+                font-size: 1.5rem !important;
+            }
+            
+            .order-card .action-buttons {
+                opacity: 1 !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-end !important;
+                width: 100% !important;
+            }
+            
+            .order-card .action-buttons button {
+                flex: 1 !important;
+                min-width: 100px !important;
+                padding: 0.5rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            /* Product grid - single column on mobile */
+            #products-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            .product-card .flex.space-x-2 {
+                flex-direction: row !important;
+            }
+            
+            .product-card button {
+                padding: 0.6rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            /* Add dish form - full width */
+            #page-add .max-w-2xl {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding: 0 !important;
+            }
+            
+            #page-add form .grid-cols-1.md\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            #page-add .md\:col-span-2 {
+                grid-column: span 1 !important;
+            }
+            
+            .flex-col.md\:flex-row {
+                flex-direction: column !important;
+            }
+            
+            /* Statistics page - responsive fixes */
+            #page-statistics .grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            #page-statistics .grid-cols-1.sm\:grid-cols-3 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            #page-statistics .lg\:grid-cols-2,
+            #page-statistics .lg\:grid-cols-3 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .flex-col.md\:flex-row.items-center {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            
+            .w-full.md\:w-1\/2 {
+                width: 100% !important;
+            }
+            
+            .pl-0.md\:pl-4 {
+                padding-left: 0 !important;
+                margin-top: 1rem !important;
+            }
+            
+            /* Modal responsiveness */
+            .fixed.inset-0 .max-w-md,
+            .fixed.inset-0 .max-w-lg,
+            .fixed.inset-0 .max-w-sm {
+                width: 90% !important;
+                max-width: 90% !important;
+                margin: 0 auto !important;
+                padding: 1.5rem !important;
+            }
+            
+            .grid.grid-cols-2.gap-3 {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            
+            .flex.space-x-3 {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            
+            .flex.space-x-3 button {
+                width: 100% !important;
+            }
+            
+            /* Toast on mobile */
+            #toast {
+                bottom: 100px !important;
+                right: 1rem !important;
+                left: 1rem !important;
+                width: calc(100% - 2rem) !important;
+            }
+            
+            #toast > div {
+                width: 100% !important;
+            }
+            
+            /* Ensure no overflow */
+            body, html {
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
+            }
+            
+            #main-content {
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
+            }
+            
+            .p-4.md\:p-8 {
+                padding: 1rem !important;
+            }
+            
+            /* Fix badge positioning on mobile nav */
+            .mobile-nav button {
+                position: relative !important;
+            }
+            
+            #order-count-badge {
+                top: 0 !important;
+                right: 0 !important;
+            }
+            
+            /* KPI cards */
+            .stat-card .text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Chart containers */
+            .h-52, .h-48, .h-40 {
+                height: 200px !important;
+            }
+            
+            canvas {
+                max-height: 200px !important;
+            }
+            
+            /* Fix flex wrap for order details */
+            .flex-wrap.items-center.gap-3 {
+                gap: 0.5rem !important;
+            }
+            
+            .text-xs.px-2.py-1.rounded-full {
+                font-size: 0.65rem !important;
+                padding: 0.2rem 0.5rem !important;
+            }
+            
+            /* Ensure 100% width */
+            .grid, .flex, .w-full {
+                max-width: 100% !important;
+            }
+            
+            /* Container padding */
+            .container, .mx-auto {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            /* Fix login screen on mobile */
+            #login-screen .max-w-md {
+                width: 95% !important;
+                padding: 1.5rem !important;
+            }
+            
+            #login-screen .text-4xl {
+                font-size: 1.8rem !important;
+            }
+            
+            #login-screen .w-24 {
+                width: 5rem !important;
+                height: 5rem !important;
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 380px) {
+            .mobile-nav button span {
+                font-size: 0.6rem !important;
+            }
+            
+            .mobile-nav button i {
+                font-size: 1rem !important;
+            }
+            
+            .order-card .action-buttons button {
+                min-width: 80px !important;
+            }
+            
+            .text-lg.font-bold.text-white {
+                font-size: 1rem !important;
             }
         }
         
@@ -1141,7 +1433,6 @@
             currentProductId = index;
             const product = allProducts[index];
             if (!product) return;
-            currentProductName = product.name;
             currentProductRowId = product.id;  // crucial: store sheet row ID
             
             document.getElementById('product-delete-info').innerHTML = `
@@ -1156,7 +1447,6 @@
             document.getElementById('delete-product-modal').classList.add('hidden');
             document.getElementById('delete-product-modal').classList.remove('flex');
             currentProductId = null;
-            currentProductName = null;
             currentProductRowId = null;
         }
 
